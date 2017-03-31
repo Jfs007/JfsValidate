@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			.plgTest{
+				width:300px;
+				text-align: center;
+				margin: 0 auto;
+				padding: 20px;
+			}
+			.ps{
+				font-size: 20px;
+				color: #ccc;
+			}
+			input {
+				color: #C0C0C0;
+				border: none;
+				border-radius: 3px;
+				padding: 8px 10px;
+				width: 180px;
+				box-shadow: 1px 1px 2px #ccc;
+				position: relative;
+				margin: 20px 20px;
+			}
+			
+			input::placeholder {
+				color: palevioletred;
+			}
+			
+			#form {
+				border-top: 1px groove #000000;
+				height: 400px;
+				width: 1400px;
+				margin: 0 auto;
+				position: relative;
+				padding: 20px;
+			}
+			
+			#form label {
+				width: 65px;
+				display: inline-block;
+				text-align: left;
+			}
+			
+			#form p {
+				padding-left: 500px;
+			}
+			
+			#form .notice {}
+			
+			.error {
+				outline: 2px solid palevioletred;
+				-moz-outline-radius: 3px;
+			}
+			
+			.success {
+				outline: 2px solid greenyellow;
+				-moz-outline-radius: 3px;
+			}
+			
+			.msg {
+				width: 160px;
+				right: 30px;
+				top: 23px;
+				text-align: left;
+				position: absolute;
+				box-sizing: border-box;
+				padding: 10px 10px;
+				border: 1px solid deepskyblue;
+				color: deepskyblue;
+			}
+			
+			.in {
+				animation: 0.8s in;
+				animation-fill-mode: forwards;
+			}
+			
+			.msg i {
+				padding-right: 25px;
+			}
+			
+			.msg:hover {
+				animation: 2.6s out;
+				animation-fill-mode: forwards;
+			}
+			
+		</style>
+	</head>
+
+	<body>
+		<h1 class="plgTest">
+		以下是插件的测试
+				<p>
+				该交检规则是之后的会去检查之前的所有dom，如果已经检查通过就不会在执行检查，可以看后面的时间是否刷新
+				</p>
+		</h1>
+		<form action="" id="form" method="post">		
+			<p><label for="">昵称</label><input type="text" id="nickname" placeholder="" name="nickname" /><i class="notice"></i></p>
+			<p><label for="">手机号</label><input type="text" id='phone' name="phone" /><i class="notice"></i></p>
+			<p><label for="">邮箱</label><input type="text" id="email" name="phone" /><i class="notice"></i></p>
+			<p><label for="">随便填</label><input type="text" name="some" id="some" value="" /><i class="notice"></i></p>
+			<p><label for="">密码</label><input type="password" name="password" id="password" value="" /><i class="notice"></i></p>
+			<p><label for="">密码校对</label><input type="password" name="confirm_password" id="confirm_password" value="" /><i class="notice"></i></p>
+			<p><label for="">运动</label><input type="checkbox" name="checkbox" id="checkbox" value="" /><i class="notice"></i></p>
+			<p><label for="">随便填</label><input type="text" name="nothing" id="nothing" value="" /><i class="notice"></i></p>
+			<p><label for="">提交</label><input type="submit" name="" id="submit" value="提交" /></i>
+			</p>			
+		</form>
+	</body>
+
+</html>
+<script src="JfsValidate.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+function Dom() {
+	var dom = {
+		hasClass: function(ele, cls) {
+				return ele.className.match(new RegExp('(\\s|^)' + cls + '(\\s|$)'))||[]
+		},
+		//添加类
+		addClass: function(ele, cls) {
+			if(!this.hasClass(ele,cls)[0]) {
+				ele.className = ele.className + " " + cls;
+			}
+			return this;
+		},
+		//移除类
+		removeClass: function(ele, cls) {
+			if(this.hasClass(ele,cls)[0]) {
+				var reg = new RegExp('(\\s|^)' + cls + '(\\s|$)');
+				ele.className = ele.className.replace(reg, "");
+			}
+			return this;
+		},
+		
+	}
+	return dom;
+}
+	var dom = Dom()
+	var jxvali = JfsValidate.ruleSetup({
+						errorMsg: {
+							require: 'This field is required.',
+							phone: 'Please enter a valid number and length is 11. like 1xxxx',
+							email: 'Please enter a valid email address. like xxx@xx.com',
+							equal: 'is no equal.',
+							maxLength: 'max {0} aha',
+							range: 'the length form {0} to {1} aha',
+							romote: 'sorry!!the name is exit.'
+						},
+		handlers: {
+			successText: 'NO ERROR !!!',
+			//全局方法，出错时的方法，和验测正确时的方法，，
+								handlerList: [function(success) {
+									var notice = this.parentNode.children[2];
+									notice.innerText = '. ' + success + ' [ '+ Date.now() + ' ]' +this.id;
+									notice.style.color = 'greenyellow';								
+									dom.removeClass(this,'error').addClass(this,'success')
+								}, function(error) {
+									var notice = this.parentNode.children[2];
+									notice.innerText = '* ' + error + ' [ '+ Date.now() + ' ]' + this.id;
+									notice.style.color = 'palevioletred';
+									dom.removeClass(this,'success').addClass(this,'error')
+								}]
+		}
+	});
+	//传入表单，规则，和需要触发的submit，
+	var jxform = JfsValidate.form(form, {
+		nickname: {
+			require: {
+				error: '昵称不能为空'
+			},
+			range: {
+				min: 4,
+				max: 10
+			},
+			romote: {
+				url: '../source/users.json',
+				data: '',
+				error: '该呢称已经存在不能重复'
+			}
+		},
+		phone: 'phone',
+		email: 'email',
+		password: {
+			require: {
+				error: '密码不能为空'
+			},
+			range: {
+				min: 5,
+				max: 12
+			}
+		},
+		confirm_password: {
+			equal: {
+				equalDom: password,
+				error: '密码与之前的不相同'
+			}
+		},
+		nothing: {
+			require: false
+		},
+		some: {
+			require: true
+		},
+		checkbox: {
+			require: false
+		}
+	}, submit);
+	console.log(jxform, 'jxvali', jxform.get('confirm_password'))
+	//console.log(JfsValidate.version);
+</script>
